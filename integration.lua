@@ -1,7 +1,9 @@
 
 minetest.override_item("air", {
     groups = {not_in_creative_inventory=1,pressure_spreadable=1},
-    _pressure_const = 100000,
+    _pressure_max = cleanroom.air.pressure_max,
+    _pressure_min = cleanroom.air.pressure_min,
+    _pressure_step = cleanroom.air.pressure_step,
     _particles_const = cleanroom.basedust_level,
   })
 

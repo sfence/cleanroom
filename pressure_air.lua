@@ -2,14 +2,23 @@
 local S = cleanroom.translator
 
 local basedust_level = {
-    p100n = 100*1000000000,
-    p200n = 100*237000000,
-    p300n = 100*102000000,
-    p500n = 100*35200000,
-    p1000n = 100*8320000,
-    p5000n = 100*293000,
+    p100n = 50000*1000000000,
+    p200n = 50000*237000000,
+    p300n = 50000*102000000,
+    p500n = 50000*35200000,
+    p1000n = 50000*8320000,
+    p5000n = 50000*293000,
   }
 cleanroom.basedust_level = basedust_level
+
+cleanroom.basedust_mass = {
+    p100n = 4.19e-15,
+    p200n = 3.35e-14,
+    p300n = 1.13e-13,
+    p500n = 5.24e-13,
+    p1000n = 4.19e-12,
+    p5000n = 5.24e-10,
+  }
 
 --[[
   {
@@ -112,6 +121,12 @@ cleanroom.basedust_level = basedust_level
     },
   },
 --]]
+    
+cleanroom.air = {
+    pressure_max = 110000,
+    pressure_min = 90000,
+    pressure_step = 20000/255,
+  }
 
 local pressure_levels = {
     ["100M"] = {
@@ -366,10 +381,10 @@ for level, data in pairs(pressure_levels) do
   data.pressure_step = (data.pressure_max-data.pressure_min)/255
   minetest.register_node(data.node_name, {
       description = S("Pressure air"),
-      --drawtype = "airlike",
-      drawtype = "glasslike",
-      tiles = {"cleanroom_pressure_air.png"},
-      use_texture_alpha = "blend",
+      drawtype = "airlike",
+      --drawtype = "glasslike",
+      --tiles = {"cleanroom_pressure_air.png"},
+      --use_texture_alpha = "blend",
       paramtype = "light",
       sun_light_propagates = true,
       floodable = true,
@@ -402,7 +417,9 @@ minetest.register_node("cleanroom:pressure_preair", {
     buildable_to = true,
     drop = "",
     groups = {pressure_spreadable=1,not_in_creative_inventory=1},
-    _pressure_const = 100000,
+    _pressure_max = cleanroom.air.pressure_max,
+    _pressure_min = cleanroom.air.pressure_min,
+    _pressure_step = cleanroom.air.pressure_step,
     _particles_const = table.copy(basedust_level),
     on_construct = on_construct,
     on_timer = function(pos, elapsed)
@@ -411,7 +428,8 @@ minetest.register_node("cleanroom:pressure_preair", {
         update_pressure_air(pos)
       else
         -- use set_node (erase metadata)
-        minetest.set_node(pos, {name="air"})
+        local node = minetest.get_node(pos)
+        minetest.set_node(pos, {name="air",param2=node.param2})
       end
       return false
     end,

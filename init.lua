@@ -8,14 +8,15 @@ local modpath = minetest.get_modpath(modname)
 
 dofile(modpath.."/functions.lua")
 
---dofile(modpath.."/dustless.lua")
---dofile(modpath.."/gasfree.lua")
 dofile(modpath.."/pressure_air.lua")
 
 dofile(modpath.."/dignode.lua")
 dofile(modpath.."/leaks.lua")
 
 dofile(modpath.."/integration.lua")
+
+-- hand measuring instruments
+dofile(modpath.."/instruments.lua")
 
 -- appliances
 --dofile(modpath.."/pump.lua")
