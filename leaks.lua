@@ -3,6 +3,17 @@ local leaky_nodes = {
   "group:door"
 }
 
+if appliances.have_pipeworks then
+  table.insert(leaky_nodes, "group:pipe")
+  table.insert(leaky_nodes, "group:tube")
+end
+
+if appliances.have_technic then
+  table.insert(leaky_nodes, "technic:lv_cable")
+  table.insert(leaky_nodes, "technic:mv_cable")
+  table.insert(leaky_nodes, "technic:hv_cable")
+end
+
 minetest.register_abm({
     label = "Vacuum or ustless air leaks",
     nodenames = leaky_nodes,

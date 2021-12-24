@@ -17,3 +17,9 @@ if minetest.get_modpath("default") then
       _particles_const = false,
     })
 end
+if minetest.get_modpath("technic") then
+  minetest.override_item("technic:lv_cable_plate_2", {
+      _pressure_const = false,
+      _particles_const = false,
+    })
+end

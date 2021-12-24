@@ -18,11 +18,20 @@ dofile(modpath.."/integration.lua")
 -- hand measuring instruments
 dofile(modpath.."/instruments.lua")
 
+dofile(modpath.."/check_valve.lua")
+
 -- appliances
---dofile(modpath.."/pump.lua")
---dofile(modpath.."/filter.lua")
+--dofile(modpath.."/vacuum_pumps/pump.lua")
+
+dofile(modpath.."/compressors/compressor.lua")
+dofile(modpath.."/compressors/compressor_M1.lua")
+
+dofile(modpath.."/air_ventilators/ventilator.lua")
+dofile(modpath.."/air_ventilators/ventilator_M1.lua")
+
+--dofile(modpath.."/air_filters/filter.lua")
 
 dofile(modpath.."/nodes.lua")
---dofile(modpath.."/craftitems.lua")
+dofile(modpath.."/craftitems.lua")
 --dofile(modpath.."/crafting.lua")
 

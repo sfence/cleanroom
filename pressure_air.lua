@@ -10,6 +10,22 @@ local basedust_level = {
     p5000n = 50000*293000,
   }
 cleanroom.basedust_level = basedust_level
+cleanroom.digdust_level = {
+    p100n = 500000*1000000000,
+    p200n = 500000*237000000,
+    p300n = 500000*102000000,
+    p500n = 500000*35200000,
+    p1000n = 500000*8320000,
+    p5000n = 500000*293000,
+  }
+cleanroom.placedust_level = {
+    p100n = 100000*1000000000,
+    p200n = 100000*237000000,
+    p300n = 100000*102000000,
+    p500n = 100000*35200000,
+    p1000n = 100000*8320000,
+    p5000n = 100000*293000,
+  }
 
 cleanroom.basedust_mass = {
     p100n = 4.19e-15,
@@ -122,11 +138,12 @@ cleanroom.basedust_mass = {
   },
 --]]
     
-cleanroom.air = {
+local air = {
     pressure_max = 110000,
     pressure_min = 90000,
-    pressure_step = 20000/255,
+    pressure_step = 20000/256,
   }
+cleanroom.air = air
 
 local pressure_levels = {
     ["100M"] = {
@@ -146,6 +163,12 @@ local pressure_levels = {
     ["500k"] = {
       -- medium pressure air
       pressure_max = 500000,
+      pressure_min = 150000,
+      drowning = 0,
+    },
+    ["150k"] = {
+      -- medium pressure air
+      pressure_max = 150000,
       --pressure_min = 100000,
       pressure_min = 110000,
       drowning = 0,
@@ -188,6 +211,7 @@ local pressure_levels = {
   }
 
 local particles_sizes = {"p100n","p200n","p300n","p500n","p1000n","p5000n"}
+cleanroom.dust_particles_sizes = particles_sizes
 
 local positions = {}
 for x = -1,1 do
@@ -203,16 +227,19 @@ local function get_pressure(pos, node, meta, def)
     if def._pressure_step then
       return def._pressure_min + def._pressure_step*node.param2
     end
+    if def._pressure_get then
+      return def._pressure_get(pos, node, meta, def)
+    end
     return def._pressure_const
   end
   return nil
 end
-function cleanroom.get_pressure(pos, node)
+function cleanroom.get_pressure(pos, node, noavg)
   if not node then
     node = minetest.get_node(pos)
   end
   local pressure = get_pressure(pos, node, minetest.get_meta(pos), minetest.registered_nodes[node.name])
-  if pressure==nil then
+  if (pressure==nil) and (not noavg) then
     -- avarage
     local sum = 0
     local nums = 0
@@ -244,12 +271,12 @@ local function get_dustlevel(pos, node, meta, def)
   end
   return nil
 end
-function cleanroom.get_dustlevel(pos, node)
+function cleanroom.get_dustlevel(pos, node, noavg)
   if not node then
     node = minetest.get_node(pos)
   end
   local particles = get_dustlevel(pos, node, minetest.get_meta(pos), minetest.registered_nodes[node.name])
-  if particles==nil then
+  if (particles==nil) and (not noavg) then
     -- avarage
     local sum = {0,0,0,0,0,0}
     local nums = 0
@@ -259,16 +286,17 @@ function cleanroom.get_dustlevel(pos, node)
       local dust = get_dustlevel(npos, nnode, minetest.get_meta(npos), minetest.registered_nodes[nnode.name])
       if dust and (dust~=false) then
         for i,key in pairs(particles_sizes) do
-          if pa[key]>=0 then
-            sum[i] = sum[i] + pa[key]
+          if dust[key]>=0 then
+            sum[i] = sum[i] + dust[key]
           else
-            sum[i] = sum[i] - pa[key]
+            sum[i] = sum[i] - dust[key]
           end
         end
         nums = nums + 1
       end
     end
     if nums>0 then
+      particles = {}
       for i,key in pairs(particles_sizes) do
         particles[key] = sum[i]/nums
       end
@@ -279,9 +307,9 @@ end
 
 local function get_pressure_node(pressure)
   local name = "cleanroom:pressure_preair"
-  local param2 = 0
+  local param2 = math.max(math.min((pressure-air.pressure_min)/air.pressure_step, 255), 0)
   for _, data in pairs(pressure_levels) do
-    if (pressure<=data.pressure_max) 
+    if (pressure<data.pressure_max) 
         and (pressure>=data.pressure_min) then
       name = data.node_name
       param2 = (pressure-data.pressure_min)/data.pressure_step
@@ -298,22 +326,36 @@ local function get_pressure_node(pressure)
 end
 cleanroom.get_pressure_node = get_pressure_node
 
-local function like_presured_air_update(pos, node, node_new, meta, def, pressure, particles)
-  if (node.param2~=node_param2) or (node.name~=node_name) then
-    node.name = node_new.name
-    node.param2 = node_new.param2
-    minetest.swap_node(pos, node)
-    -- should lay out server usage from one moment to time
-    local timer = minetest.get_node_timer(pos)
-    if not timer:is_started() then
-      timer:set(1, 0.02*i)
-    end
-    --timer:stop()
+function cleanroom.pressure_node_update(pos, node, meta, def, pressure, particles)
+  if not node then
+    node = minetest.get_node(pos)
   end
-  if particles then
-    for index, key in pairs(particles_sizes) do
-      meta:set_int(key, sum_particles[index])
+  if not meta then 
+    meta = minetest.get_meta(pos)
+  end
+  if not def then 
+    def = minetest.registered_nodes[node.name]
+  end
+  local node_name, node_param2 = get_pressure_node(pressure)
+  if def.groups and def.groups.pressure_spreadable then
+    if (node.param2~=node_param2) or (node.name~=node_name) then
+      node.name = node_name
+      node.param2 = node_param2
+      minetest.swap_node(pos, node)
+      -- should lay out server usage from one moment to time
+      local timer = minetest.get_node_timer(pos)
+      if not timer:is_started() then
+        timer:set(1, 0.5)
+      end
+      --timer:stop()
     end
+    if particles then
+      for _, key in pairs(particles_sizes) do
+        meta:set_float(key, particles[key])
+      end
+    end
+  elseif def._pressure_update then
+    def._pressure_update(pos, node, node_new, meta, def, pressure, particles)
   end
 end
 
@@ -323,11 +365,14 @@ local function update_pressure_air(pos)
   local nodes_meta = {}
   local nodes_def = {}
   local nodes_pressure = {}
+  local nodes_ipressure = {}
   local nodes_particles = {}
   local sum_pressure = 0
+  local sum_ipressure = 0
   local nums_pressure = 0
   local sum_particles = {0,0,0,0,0,0}
   local nums_particles = 0
+  --print(dump(pos))
   for i,vect in pairs(positions) do
     nodes_pos[i] = vector.add(pos,vect)
     nodes[i] = minetest.get_node(nodes_pos[i])
@@ -339,15 +384,20 @@ local function update_pressure_air(pos)
     nodes_pressure[i] = pressure
     nodes_particles[i] = particles_nm
     if pressure then
+      local ipressure = 1/pressure
+      nodes_ipressure[i] = ipressure
       if pressure>=0 then
         sum_pressure = sum_pressure + pressure
+        sum_ipressure = sum_ipressure + ipressure
         nums_pressure = nums_pressure + 1
       else
         sum_pressure = sum_pressure - pressure
+        sum_ipressure = sum_ipressure - ipressure
       end
       --print("num: "..nums_pressure.." sum: "..sum_pressure)
     end
     if particles_nm then
+      --print("in particles "..i..": "..particles_nm.p100n)
       for index, key in pairs(particles_sizes) do
         sum_particles[index] = sum_particles[index] + particles_nm[key]
       end
@@ -379,6 +429,7 @@ local function update_pressure_air(pos)
       end
       if anums_pressure>0 then
         sum_pressure = sum_pressure + asum_pressure/anums_pressure
+        sum_ipressure = sum_ipressure + anums_pressure/asum_pressure
         nums_pressure = nums_pressure + 1
       end
       if anums_particles>0 then
@@ -389,10 +440,14 @@ local function update_pressure_air(pos)
       end
     end
   end
+  sum_pressure = sum_pressure/nums_pressure
+  sum_ipressure = sum_ipressure/nums_pressure
+  local idensity = {}
   for key=1,6 do
     sum_particles[key] = sum_particles[key] / nums_particles
+    idensity[key] = sum_particles[key] / sum_ipressure
   end
-  sum_pressure = sum_pressure/nums_pressure
+  local particles = {}
   local node_name, node_param2 = get_pressure_node(sum_pressure)
   --print("new_node: "..node_name.." for "..(sum_pressure))
   for i = 1,27 do
@@ -400,6 +455,10 @@ local function update_pressure_air(pos)
     local meta = nodes_meta[i]
     local def = nodes_def[i]
     if nodes_pressure[i] and def then
+      for key=1,6 do
+        particles[key] = 0.2*sum_particles[key] + 0.8*nodes_ipressure[i]*idensity[key]
+      end
+      --print("updated particles "..i..": "..particles[1])
       if def.groups and def.groups.pressure_spreadable then
         if (node.param2~=node_param2) or (node.name~=node_name) then
           node.name = node_name
@@ -413,10 +472,14 @@ local function update_pressure_air(pos)
           --timer:stop()
         end
         for index, key in pairs(particles_sizes) do
-          meta:set_int(key, sum_particles[index])
+          meta:set_float(key, particles[index])
         end
       elseif def._pressure_update then
-        def._pressure_update(nodes_pos[i], node, {name=node_name,param2=node_param2}, meta, def, pressure, sum_particles)
+        local key_particles = {}
+        for index, key in pairs(particles_sizes) do
+          key_particles[key] = particles[index]
+        end
+        def._pressure_update(nodes_pos[i], node, {name=node_name,param2=node_param2}, meta, def, pressure, key_particles)
       end
     end
   end
@@ -444,7 +507,7 @@ end
 
 for level, data in pairs(pressure_levels) do
   data.node_name = "cleanroom:pressure_air_"..level
-  data.pressure_step = (data.pressure_max-data.pressure_min)/255
+  data.pressure_step = (data.pressure_max-data.pressure_min)/256
   minetest.register_node(data.node_name, {
       description = S("Pressure air"),
       drawtype = "airlike",
@@ -452,7 +515,7 @@ for level, data in pairs(pressure_levels) do
       --tiles = {"cleanroom_pressure_air.png"},
       --use_texture_alpha = "blend",
       paramtype = "light",
-      sun_light_propagates = true,
+      sunlight_propagates = true,
       floodable = true,
       walkable = false,
       diggable = false,
@@ -475,7 +538,7 @@ minetest.register_node("cleanroom:pressure_preair", {
     description = S("Preasure Pre-Air"),
     drawtype = "airlike",
     paramtype = "light",
-    sun_light_propagates = true,
+    sunlight_propagates = true,
     floodable = true,
     walkable = false,
     diggable = false,

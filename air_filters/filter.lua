@@ -1,0 +1,4 @@
+
+local S = laboratory.translator;
+
+
