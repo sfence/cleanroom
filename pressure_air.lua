@@ -144,6 +144,7 @@ local air = {
     pressure_step = 20000/256,
   }
 cleanroom.air = air
+cleanroom.normal_air_pressure = 100000
 
 local pressure_levels = {
     ["100M"] = {
@@ -230,9 +231,15 @@ local function get_pressure(pos, node, meta, def)
     if def._pressure_get then
       return def._pressure_get(pos, node, meta, def)
     end
-    return def._pressure_const
+    if def._pressure_const~=nil then
+      return def._pressure_const
+    end
+    -- pressure avarage or ignore
+    if def._pressure_ignore then
+      return nil
+    end
   end
-  return nil
+  return cleanroom.normal_air_pressure
 end
 function cleanroom.get_pressure(pos, node, noavg)
   if not node then
@@ -267,9 +274,15 @@ local function get_dustlevel(pos, node, meta, def)
     if def._particles_func then
       return def._particles_func(pos, node, meta)
     end
-    return def._particles_const
+    if def._particles_const~=nil then
+      return def._particles_const
+    end
+    if def._particles_ignore then
+      -- dust avarage or ignore
+      return nil
+    end
   end
-  return nil
+  return basedust_level
 end
 function cleanroom.get_dustlevel(pos, node, noavg)
   if not node then
@@ -479,7 +492,7 @@ local function update_pressure_air(pos)
         for index, key in pairs(particles_sizes) do
           key_particles[key] = particles[index]
         end
-        def._pressure_update(nodes_pos[i], node, {name=node_name,param2=node_param2}, meta, def, pressure, key_particles)
+        def._pressure_update(nodes_pos[i], node, {name=node_name,param2=node_param2}, meta, def, sum_pressure, key_particles)
       end
     end
   end
@@ -492,17 +505,6 @@ end
 local function on_timer(pos, elapsed)
   update_pressure_air(pos)
   return false
-end
-
-function cleanroom.get_dustlevel_particles_meta(pos, node, meta)
-  return {
-      p100n = meta:get_float("p100n"),
-      p200n = meta:get_float("p200n"),
-      p300n = meta:get_float("p300n"),
-      p500n = meta:get_float("p500n"),
-      p1000n = meta:get_float("p1000n"),
-      p5000n = meta:get_float("p5000n"),
-    }
 end
 
 for level, data in pairs(pressure_levels) do

@@ -3,14 +3,17 @@ local S = cleanroom.translator
 
 local check_valve_get_pressure = function(pos, node, meta)
   --print("check valve -> get_pressure")
-  return nil
-  --return meta:get_float("pressure")
+  --return nil
+  return tonumber(meta:get("pressure") or cleanroom.normal_air_pressure)
 end
+
+local placedust_level = cleanroom.placedust_level
+local particles_sizes = cleanroom.dust_particles_sizes
 
 local check_valve_update_pressure = function(pos, node_old, node_new, meta, def, pressure, particles)
   meta:set_float("pressure", pressure)
   for _, key in pairs(particles_sizes) do
-    meta:set_float(key, particles[key])
+    meta:set_float(key, particles[key] or placedust_level[key])
   end
   local timer = minetest.get_node_timer(pos)
   if not timer:is_started() then
@@ -105,7 +108,7 @@ minetest.register_node("cleanroom:check_valve_close", {
     mesh = "cleanroom_check_valve_close.obj",
     tiles = {"cleanroom_steel.png", "icleanroom_check_valve.png"},
     groups = {choppy = 2},
-    _pressure_func = check_valve_get_pressure,
+    _pressure_ignore = true,
     _particles_func = cleanroom.get_dustlevel_particles_meta,
     _pressure_update = check_valve_update_pressure,
     on_timer = check_valve_on_timer,
@@ -118,7 +121,7 @@ minetest.register_node("cleanroom:check_valve_open", {
     tiles = {"cleanroom_steel.png", "icleanroom_check_valve.png"},
     groups = {choppy = 2, not_in_creative_inventory = 1},
     drop = "cleanroom:check_valve_closed",
-    _pressure_func = check_valve_get_pressure,
+    _pressure_ignore = true,
     _particles_func = cleanroom.get_dustlevel_particles_meta,
     _pressure_update = check_valve_update_pressure,
     on_timer = check_valve_on_timer,

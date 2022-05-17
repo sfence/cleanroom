@@ -16,6 +16,11 @@ if minetest.get_modpath("default") then
       _pressure_const = false,
       _particles_const = false,
     })
+  minetest.override_item("default:goldblock", {
+      _pressure_const = false,
+      _particles_part = 0.01,
+      _particles_func = cleanroom.get_dustlevel_particles_cleanwall,
+    })
 end
 if minetest.get_modpath("technic") then
   minetest.override_item("technic:lv_cable_plate_2", {
@@ -23,3 +28,4 @@ if minetest.get_modpath("technic") then
       _particles_const = false,
     })
 end
+
