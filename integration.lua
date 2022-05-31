@@ -20,10 +20,24 @@ if minetest.get_modpath("default") then
       _pressure_const = false,
       _particles_part = 0.01,
       _particles_func = cleanroom.get_dustlevel_particles_cleanwall,
+      _pressure_update = cleanroom.pressure_update_cleanwall,
+      _cleaning_eff = 1.0,
     })
 end
 if minetest.get_modpath("technic") then
+  minetest.override_item("technic:lv_cable_plate_1", {
+      _pressure_const = false,
+      _particles_const = false,
+    })
   minetest.override_item("technic:lv_cable_plate_2", {
+      _pressure_const = false,
+      _particles_const = false,
+    })
+  minetest.override_item("technic:lv_cable_plate_3", {
+      _pressure_const = false,
+      _particles_const = false,
+    })
+  minetest.override_item("technic:lv_cable_plate_6", {
       _pressure_const = false,
       _particles_const = false,
     })

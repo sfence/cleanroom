@@ -87,6 +87,12 @@ local node_def = {
     is_ground_content = false,
     sounds = hades_sounds.node_sound_stone_defaults(),
     drawtype = "node",
+    
+    _pressure_const = false,
+    _particles_part = 0.005,
+    _particles_func = cleanroom.get_dustlevel_particles_cleanwall,
+    _pressure_update = cleanroom.pressure_update_cleanwall,
+    _cleaning_eff = 0.8,
   }
 
 local node_inactive = {

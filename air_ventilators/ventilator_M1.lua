@@ -114,6 +114,12 @@ local node_def = {
     is_ground_content = false,
     sounds = node_sounds,
     drawtype = "mesh",
+    
+    _pressure_const = false,
+    _particles_part = 0.002,
+    _particles_func = cleanroom.get_dustlevel_particles_cleanwall,
+    _pressure_update = cleanroom.pressure_update_cleanwall,
+    _cleaning_eff = 0.5,
   }
 
 local node_inactive = {

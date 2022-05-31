@@ -272,10 +272,13 @@ end
 local function get_dustlevel(pos, node, meta, def)
   if def then
     if def._particles_func then
-      return def._particles_func(pos, node, meta)
+      return def._particles_func(pos, node, meta, def)
     end
     if def._particles_const~=nil then
-      return def._particles_const
+      if def._particles_const==false then
+        return def._particles_const
+      end
+      return table.copy(def._particles_const)
     end
     if def._particles_ignore then
       -- dust avarage or ignore

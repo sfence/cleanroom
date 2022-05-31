@@ -6,9 +6,9 @@ cleanroom = {
 local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
 
-dofile(modpath.."/functions.lua")
-
 dofile(modpath.."/pressure_air.lua")
+
+dofile(modpath.."/functions.lua")
 
 dofile(modpath.."/dignode.lua")
 dofile(modpath.."/leaks.lua")
@@ -19,6 +19,12 @@ dofile(modpath.."/integration.lua")
 dofile(modpath.."/instruments.lua")
 
 dofile(modpath.."/check_valve.lua")
+
+dofile(modpath.."/cleaning.lua")
+
+if minetest.get_modpath("mesecons") then
+  dofile(modpath.."/mesecons/mesecons.lua")
+end
 
 -- appliances
 --dofile(modpath.."/vacuum_pumps/pump.lua")
