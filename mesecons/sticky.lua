@@ -3,10 +3,18 @@ local S = cleanroom.translator
 
 minetest.register_node("cleanroom:stickyblock_gold", {
     description = S("Gold Sticky Block"),
-    tiles = {"cleanroom_stickyblock_gold.png"},
+    tiles = {
+      "cleanroom_block_gold.png",
+      "cleanroom_block_gold.png",
+      "cleanroom_block_gold.png",
+      "cleanroom_block_gold.png",
+      "cleanroom_stickyblock_gold.png",
+      "cleanroom_stickyblock_gold.png",
+    },
     is_ground_content = false,
     groups = {choppy=3, oddly_breakable_by_hand=2},
     sounds = default.node_sound_wood_defaults(),
+    paramtype2 = "facedir",
     
     mvps_sticky = function (pos, node)
       local connected = {}

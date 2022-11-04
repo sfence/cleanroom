@@ -66,7 +66,7 @@ function ventilator_A1:get_formspec(meta, production_percent, consumption_percen
   
   
   
-  local formspec =  "formspec_version[3]" .. "size[12.75,8.5]" ..
+  local formspec =  "size[12.75,8.5]" ..
                     "background[-1.25,-1.25;15,10;appliances_appliance_formspec.png]" ..
                     progress..
                     "list[current_player;main;0.3,3;10,4;]" ..
@@ -98,6 +98,7 @@ if minetest.get_modpath("hades_sounds") then
 end
 
 local node_def = {
+    paramtype = "light",
     paramtype2 = "facedir",
     groups = {cracky = 2},
     legacy_facedir_simple = true,

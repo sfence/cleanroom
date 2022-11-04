@@ -25,16 +25,16 @@ mesecon.register_node("cleanroom:mesecon_switch_gold", {
 },{
   groups = {dig_immediate=2},
   tiles = {
-        "cleanroom_switch_gold_side.png", "cleanroom_switch_gold_side.png",
-        "cleanroom_switch_gold_side.png", "cleanroom_switch_gold_side.png",
-        "cleanroom_switch_gold_side.png", "cleanroom_switch_gold_off.png"},
+        "cleanroom_block_gold.png", "cleanroom_block_gold.png",
+        "cleanroom_block_gold.png", "cleanroom_block_gold.png",
+        "cleanroom_block_gold.png", "cleanroom_switch_gold_off.png"},
   mesecons = {receptor = { state = mesecon.state.off }}
 },{
   groups = {dig_immediate=2, not_in_creative_inventory=1},
   tiles = {
-        "cleanroom_switch_gold_side.png", "cleanroom_switch_gold_side.png",
-        "cleanroom_switch_gold_side.png", "cleanroom_switch_gold_side.png",
-        "cleanroom_switch_gold_side.png", "cleanroom_switch_gold_on.png"},
+        "cleanroom_block_gold.png", "cleanroom_block_gold.png",
+        "cleanroom_block_gold.png", "cleanroom_block_gold.png",
+        "cleanroom_block_gold.png", "cleanroom_switch_gold_on.png"},
   mesecons = {receptor = { state = mesecon.state.on }}
 })
 

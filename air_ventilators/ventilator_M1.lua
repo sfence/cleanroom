@@ -76,7 +76,7 @@ function ventilator_M1:get_formspec(meta, production_percent, consumption_percen
   
   
   
-  local formspec =  "formspec_version[3]" .. "size[12.75,8.5]" ..
+  local formspec =  "size[12.75,8.5]" ..
                     "background[-1.25,-1.25;15,10;appliances_appliance_formspec.png]" ..
                     progress..
                     player_inv ..
